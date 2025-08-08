@@ -49,14 +49,18 @@ app.post("/subscribe", (req, res) => {
     }
 
     // Check if email already exists
-    const existingSubscriber = db.subscribers.find(
+    const existingSubscriber = db.subscribers.findIndex(
       (sub) => sub.email === email
     );
-    if (existingSubscriber) {
-      return res.status(409).json({
-        status: "error",
-        message: "Email already subscribed",
+    if (existingSubscriber !== -1) {
+      db.subscribers[subscriberIndex].active = true;
+      syncDatabase();
+
+      res.status(201).json({
+        status: "success",
+        message: "Successfully subscribed",
       });
+      return;
     }
 
     // Create new subscriber
