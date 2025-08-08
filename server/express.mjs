@@ -32,11 +32,10 @@ app.post("/subscribe", (req, res) => {
     const { email, name, source, meta } = req.body;
 
     // Validate required fields
-    if (!email || !name || !source) {
+    if (!email) {
       return res.status(400).json({
         status: "error",
-        message:
-          "Missing required fields: email, name, and source are required",
+        message: "Missing required fields: email is required",
       });
     }
 
