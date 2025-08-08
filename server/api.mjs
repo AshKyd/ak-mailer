@@ -88,6 +88,14 @@ app.post("/subscribe", (req, res) => {
   }
 });
 
+app.get("/admin/:password/db", (req, res) => {
+  const password = process.env.PASSWORD || Infinity;
+  if (req.params.password !== password) {
+    res.status(401).send({ error: "Authentication required" });
+  }
+  res.send(db);
+});
+
 // Unsubscribe endpoint
 app.get("/unsubscribe/:email", (req, res) => {
   const { email } = req.params;
