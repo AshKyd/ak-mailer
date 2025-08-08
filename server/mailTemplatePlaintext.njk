@@ -1,0 +1,10 @@
+{{newPostText}}
+
+{% for post in posts %}
+* {{ post.title }}: {{ post.link }}
+{% endfor %}
+
+You're receiving this email because you subscribed via {{subscriber.source}}.
+
+Unsubscribe from this list:
+{{ unsubscribeUrl }}
