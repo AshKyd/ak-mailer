@@ -90,6 +90,7 @@ app.post("/subscribe", (req, res) => {
 
 app.get("/admin/:password/db", (req, res) => {
   const password = process.env.PASSWORD || Infinity;
+  console.log("params", req.params.password, password);
   if (req.params.password !== password) {
     res.status(401).send({ error: "Authentication required" });
   }
