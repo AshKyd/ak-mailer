@@ -93,6 +93,8 @@ app.post("/subscribe", (req, res) => {
 app.get("/unsubscribe/:email", (req, res) => {
   const { email } = req.params;
 
+  console.log(new Date().toISOString(), "Unsubscribing", email);
+
   try {
     // Find subscriber by email
     const subscriberIndex = db.subscribers.findIndex(
