@@ -53,7 +53,7 @@ app.post("/subscribe", (req, res) => {
       (sub) => sub.email === email
     );
     if (existingSubscriber !== -1) {
-      db.subscribers[subscriberIndex].active = true;
+      db.subscribers[existingSubscriber].active = true;
       syncDatabase();
 
       res.status(201).json({
