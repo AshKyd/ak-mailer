@@ -26,5 +26,5 @@ try {
 }
 
 export function syncDatabase() {
-  //   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 }
