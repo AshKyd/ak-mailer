@@ -26,5 +26,6 @@ try {
 }
 
 export function syncDatabase() {
+  console.log("Writing DB");
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 }

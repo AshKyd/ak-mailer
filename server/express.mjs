@@ -74,6 +74,7 @@ app.post("/subscribe", (req, res) => {
     // Add to database
     db.subscribers.push(newSubscriber);
     syncDatabase();
+    console.log(new Date().toISOString(), "Subscribed new user", email);
 
     res.status(201).json({
       status: "success",
