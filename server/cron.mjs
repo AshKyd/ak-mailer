@@ -71,7 +71,7 @@ async function checkSend() {
     return;
   }
 
-  const subscribers = db.subscribers.filter((subscriber) => subscriber.active);
+  const subscribers = db.subscribers;
   console.log(`Found ${subscribers.length} active subscribers`);
 
   // TODO: Implement actual email sending logic here

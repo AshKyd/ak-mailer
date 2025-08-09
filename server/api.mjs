@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
-import fs from "fs";
 import { fileURLToPath } from "url";
 import { db, syncDatabase } from "./db.mjs";
 
@@ -53,9 +52,6 @@ app.post("/subscribe", (req, res) => {
       (sub) => sub.email === email
     );
     if (existingSubscriber !== -1) {
-      db.subscribers[existingSubscriber].active = true;
-      syncDatabase();
-
       res.status(201).json({
         status: "success",
         message: "Successfully subscribed",
@@ -71,7 +67,6 @@ app.post("/subscribe", (req, res) => {
       source,
       meta: meta || {},
       subscribedAt: new Date().toISOString(),
-      active: true,
     };
 
     // Add to database
@@ -113,10 +108,9 @@ app.get("/unsubscribe/:email", (req, res) => {
       (sub) => sub.email === email
     );
 
-    // If found, mark as inactive
+    // If found, remove from subscribers list
     if (subscriberIndex !== -1) {
-      db.subscribers[subscriberIndex].active = false;
-      db.subscribers[subscriberIndex].unsubscribedAt = new Date().toISOString();
+      db.subscribers.splice(subscriberIndex, 1);
       syncDatabase();
     }
   } catch (error) {

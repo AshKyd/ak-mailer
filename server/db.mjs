@@ -25,6 +25,23 @@ try {
   console.log("Creating new database file");
 }
 
+// Migration function to remove inactive subscribers
+export function runMigration() {
+  const initialLength = db.subscribers.length;
+  db.subscribers = db.subscribers.filter(
+    (subscriber) => subscriber.active !== false
+  );
+  const removedCount = initialLength - db.subscribers.length;
+
+  if (removedCount > 0) {
+    console.log(`Migration: Removed ${removedCount} inactive subscribers`);
+    syncDatabase();
+  }
+}
+
+// Run migration on startup
+runMigration();
+
 export function syncDatabase() {
   console.log("Writing DB");
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
