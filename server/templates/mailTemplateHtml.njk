@@ -44,20 +44,6 @@
             font-size: 14px;
             color: #6c757d;
         }
-        .unsubscribe {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 6px;
-            text-align: center;
-        }
-        .unsubscribe a {
-            color: #6c757d;
-            text-decoration: none;
-        }
-        .unsubscribe a:hover {
-            text-decoration: underline;
-        }
         @media (max-width: 600px) {
             body {
                 padding: 10px;
@@ -78,10 +64,10 @@
         {{ content | safe }}
 
         <div class="footer">
-            <p>You're receiving this email because you subscribed via {{subscriber.source}}.</p>
-            <div class="unsubscribe">
-                <a href="{{ unsubscribeUrl }}">Unsubscribe from this list</a>
-            </div>
+            <p>
+            You're receiving this email because you subscribed via {{subscriber.source}}. 
+            You can <a href="{{ unsubscribeUrl }}">unsubscribe</a> if you like.
+            </p>
         </div>
     </div>
 </body>
