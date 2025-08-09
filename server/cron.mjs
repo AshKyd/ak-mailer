@@ -2,6 +2,7 @@ import { db, syncDatabase } from "./db.mjs";
 import Parser from "rss-parser";
 import dotenv from "dotenv";
 import { sendMailout } from "./mail.mjs";
+import he from "he";
 import { log } from "./log.mjs";
 
 dotenv.config();
@@ -43,9 +44,9 @@ async function getFeeds() {
 function getNewPosts({ feeds, since }) {
   const newPosts = [];
   for (const feed of feeds) {
-    const posts = feed.items.filter(
-      (item) => new Date(item.pubDate) > new Date(since)
-    );
+    const posts = feed.items
+      .filter((item) => new Date(item.pubDate) > new Date(since))
+      .map((item) => ({ ...item, title: he.decode(item.title) }));
     newPosts.push(...posts);
   }
   return newPosts;
