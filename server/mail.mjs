@@ -8,44 +8,64 @@ import formData from "form-data";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load the template file
-const templateHtml = fs.readFileSync(
-  path.join(__dirname, "mailTemplateHtml.njk"),
-  "utf8"
-);
-const templatePlaintext = fs.readFileSync(
-  path.join(__dirname, "mailTemplatePlaintext.njk"),
-  "utf8"
-);
+// Configure nunjucks with the templates directory
+nunjucks.configure(path.join(__dirname, "./templates"), { autoescape: true });
+
+export function sendWelcomeMail(subscriber) {
+  const emailTitle = process.env.WELCOME_TITLE || "Thanks for subscribing";
+  const emailContent =
+    process.env.WELCOME_TEXT ||
+    `You'll an email whenever there' i's a new post`;
+  const templateData = {
+    faviconUrl: process.env.FAVICON_URL,
+    emailTitle,
+    content: `<p>${emailContent}</p>`,
+    subscriber: subscriber,
+    unsubscribeUrl: `${
+      process.env.BASE_URL || "http://localhost:3001"
+    }/unsubscribe/${subscriber.email}`,
+  };
+
+  const emailHtml = nunjucks.render("mailTemplateHtml.njk", templateData);
+  const emailText = [emailTitle, emailContent].join("\n\n");
+
+  sendToMailgun([
+    {
+      subscriber,
+      emailHtml,
+      emailText,
+      subject: emailTitle,
+    },
+  ]);
+}
 
 export function sendMailout({ subscribers, newPosts }) {
   const mailoutsToSend = [];
 
   for (const subscriber of subscribers) {
-    // Generate personalized unsubscribe URL
-    const unsubscribeUrl = `${
-      process.env.BASE_URL || "http://localhost:3001"
-    }/unsubscribe/${subscriber.email}`;
-
-    const newPostText = process.env.NEW_POST_TEXT || "There's a new post";
-
+    const emailTitle = process.env.NEW_POST_TEXT || "There's a new post";
     const templateData = {
-      posts: newPosts,
-      subscriber: subscriber,
-      unsubscribeUrl: unsubscribeUrl,
-      newPostText,
       faviconUrl: process.env.FAVICON_URL,
+      emailTitle,
+      content: nunjucks.render("newPosts.njk", { posts: newPosts }),
+      subscriber: subscriber,
+      unsubscribeUrl: `${
+        process.env.BASE_URL || "http://localhost:3001"
+      }/unsubscribe/${subscriber.email}`,
     };
     // Render personalized email template for this subscriber
-    const emailHtml = nunjucks.renderString(templateHtml, templateData);
-    const emailText = nunjucks.renderString(templatePlaintext, templateData);
+    const emailHtml = nunjucks.render("mailTemplateHtml.njk", templateData);
+    const emailText = nunjucks.renderString(
+      "mailTemplatePlaintext.njk",
+      templateData
+    );
 
     // Add to mailouts to send
     mailoutsToSend.push({
       subscriber: subscriber,
       emailHtml,
       emailText,
-      subject: newPostText,
+      subject: emailTitle,
     });
   }
 

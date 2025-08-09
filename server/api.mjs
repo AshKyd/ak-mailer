@@ -3,6 +3,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { db, syncDatabase } from "./db.mjs";
+import { sendMailout, sendWelcomeMail } from "./mail.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -74,6 +75,8 @@ app.post("/subscribe", (req, res) => {
     syncDatabase();
     console.log(new Date().toISOString(), "Subscribed new user", email);
 
+    sendWelcomeMail(newSubscriber);
+
     res.status(201).json({
       status: "success",
       message: "Successfully subscribed",
@@ -85,15 +88,6 @@ app.post("/subscribe", (req, res) => {
       message: "Internal server error",
     });
   }
-});
-
-app.get("/admin/:password/db", (req, res) => {
-  const password = process.env.ADMIN_PASSWORD || Infinity;
-  if (req.params.password !== password) {
-    res.status(401).send({ error: "Authentication required" });
-    return;
-  }
-  res.send(db);
 });
 
 // Unsubscribe endpoint
@@ -134,6 +128,35 @@ app.get("/unsubscribe/:email", (req, res) => {
         </body>
         </html>
     `);
+});
+
+const password = process.env.ADMIN_PASSWORD || Infinity;
+app.get("/admin/:password/db", (req, res) => {
+  if (req.params.password !== password) {
+    res.status(401).send({ error: "Authentication required" });
+    return;
+  }
+  res.send(db);
+});
+app.get("/admin/:password/test/:email", async (req, res) => {
+  if (req.params.password !== password) {
+    res.status(401).send({ error: "Authentication required" });
+    return;
+  }
+
+  const subscriber = db.subscribers.find(
+    (sub) => sub.email === req.params.email
+  );
+  if (!subscriber) {
+    return res.status(404).send({ error: "not found" });
+  }
+
+  await sendMailout({
+    subscribers: [subscriber],
+    newPosts: [{ link: "https://example.org/", title: "Title of a new post" }],
+  });
+
+  res.send({ status: "ok" });
 });
 
 // Start server

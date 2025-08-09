@@ -1,0 +1,7 @@
+{% for post in posts %}
+<div class="post">
+    <h2 class="post-title">
+        <a href="{{ post.link }}" style="display:block;margin:15px 0;padding:15px 30px;text-align:center;">👉 {{ post.title }}</a>
+    </h2>
+</div>
+{% endfor %}
