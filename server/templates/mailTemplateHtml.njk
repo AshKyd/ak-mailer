@@ -20,6 +20,9 @@
             padding: 30px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        .content{
+            font-size: 16px;
+        }
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -61,7 +64,7 @@
             <h1>{{emailTitle}}</h1>
         </div>
 
-        {{ content | safe }}
+        <div class="content">{{ content | safe }}</div>
 
         <div class="footer">
             <p>
