@@ -5,6 +5,11 @@ import { fileURLToPath } from "url";
 import { db, syncDatabase } from "./db.mjs";
 import { sendMailout, sendWelcomeMail } from "./mail.mjs";
 import { log } from "./log.mjs";
+import {
+  adminAuthMiddleware,
+  adminGetDb,
+  adminSendTestEmail,
+} from "./api.admin.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -131,34 +136,8 @@ app.get("/unsubscribe/:email", (req, res) => {
     `);
 });
 
-const password = process.env.ADMIN_PASSWORD || Infinity;
-app.get("/admin/:password/db", (req, res) => {
-  if (req.params.password !== password) {
-    res.status(401).send({ error: "Authentication required" });
-    return;
-  }
-  res.send(db);
-});
-app.get("/admin/:password/test/:email", async (req, res) => {
-  if (req.params.password !== password) {
-    res.status(401).send({ error: "Authentication required" });
-    return;
-  }
-
-  const subscriber = db.subscribers.find(
-    (sub) => sub.email === req.params.email
-  );
-  if (!subscriber) {
-    return res.status(404).send({ error: "not found" });
-  }
-
-  await sendMailout({
-    subscribers: [subscriber],
-    newPosts: [{ link: "https://example.org/", title: "Title of a new post" }],
-  });
-
-  res.send({ status: "ok" });
-});
+app.get("/admin/db", adminAuthMiddleware, adminGetDb);
+app.get("/admin/test/:email", adminAuthMiddleware, adminSendTestEmail);
 
 // Start server
 app.listen(PORT, () => {
