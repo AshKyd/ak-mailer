@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { db, syncDatabase } from "./db.mjs";
 import { sendMailout, sendWelcomeMail } from "./mail.mjs";
+import { log } from "./log.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -73,7 +74,7 @@ app.post("/subscribe", (req, res) => {
     // Add to database
     db.subscribers.push(newSubscriber);
     syncDatabase();
-    console.log(new Date().toISOString(), "Subscribed new user", email);
+    log("Subscribed new user", email);
 
     sendWelcomeMail(newSubscriber);
 
@@ -82,7 +83,7 @@ app.post("/subscribe", (req, res) => {
       message: "Successfully subscribed",
     });
   } catch (error) {
-    console.error("Subscribe error:", error);
+    log("Subscribe error:", error);
     res.status(500).json({
       status: "error",
       message: "Internal server error",
@@ -94,7 +95,7 @@ app.post("/subscribe", (req, res) => {
 app.get("/unsubscribe/:email", (req, res) => {
   const { email } = req.params;
 
-  console.log(new Date().toISOString(), "Unsubscribing", email);
+  log("Unsubscribing", email);
 
   try {
     // Find subscriber by email
@@ -108,7 +109,7 @@ app.get("/unsubscribe/:email", (req, res) => {
       syncDatabase();
     }
   } catch (error) {
-    console.error("Unsubscribe error:", error);
+    log("Unsubscribe error:", error);
     // Continue to show success message even if there's an error
   }
 
@@ -161,6 +162,6 @@ app.get("/admin/:password/test/:email", async (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📡 Heartbeat endpoint: http://localhost:${PORT}/heartbeat`);
+  log(`🚀 Server running on http://localhost:${PORT}`);
+  log(`📡 Heartbeat endpoint: http://localhost:${PORT}/heartbeat`);
 });

@@ -1,7 +1,5 @@
 import fs from "fs";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { log } from "./log.mjs";
 
 const DB_PATH = process.env.DB_PATH || "./data/mailer.json";
 
@@ -14,15 +12,15 @@ export const db = {
 // Load existing database if it exists
 try {
   const jsonString = fs.readFileSync(DB_PATH, "utf8");
-  console.log("loaded:", jsonString, typeof jsonString);
+  log("loaded:", jsonString, typeof jsonString);
 
   const loadedDb = JSON.parse(jsonString);
   db.subscribers = loadedDb.subscribers;
   db.lastMailout = loadedDb.lastMailout;
 } catch (error) {
-  console.log(error);
+  log(error);
   // Database doesn't exist, use default structure
-  console.log("Creating new database file");
+  log("Creating new database file");
 }
 
 // Migration function to remove inactive subscribers
@@ -34,7 +32,7 @@ export function runMigration() {
   const removedCount = initialLength - db.subscribers.length;
 
   if (removedCount > 0) {
-    console.log(`Migration: Removed ${removedCount} inactive subscribers`);
+    log(`Migration: Removed ${removedCount} inactive subscribers`);
     syncDatabase();
   }
 }
@@ -43,6 +41,6 @@ export function runMigration() {
 runMigration();
 
 export function syncDatabase() {
-  console.log("Writing DB");
+  log("Writing DB");
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 }

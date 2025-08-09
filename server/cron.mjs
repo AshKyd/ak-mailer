@@ -2,6 +2,7 @@ import { db, syncDatabase } from "./db.mjs";
 import Parser from "rss-parser";
 import dotenv from "dotenv";
 import { sendMailout } from "./mail.mjs";
+import { log } from "./log.mjs";
 
 dotenv.config();
 
@@ -27,7 +28,7 @@ async function fetchIfChangedSince({ url, since }) {
 async function getFeeds() {
   const rssFeeds = process.env.RSS_FEEDS;
   if (!rssFeeds) {
-    console.log("No RSS_FEEDS configured");
+    log("No RSS_FEEDS configured");
     return [];
   }
   const feedUrls = rssFeeds
@@ -51,7 +52,7 @@ function getNewPosts({ feeds, since }) {
 }
 
 async function checkSend() {
-  console.log("Checking for new posts");
+  log("Checking for new posts");
   const now = Date.now();
   const lastMailout = db.lastMailout;
   const feedSource = await getFeeds();
@@ -60,19 +61,19 @@ async function checkSend() {
   );
   const newPosts = getNewPosts({ feeds, since: lastMailout });
 
-  console.log(
+  log(
     `Found ${newPosts.length} new posts since ${new Date(
       lastMailout
     ).toISOString()}: ${newPosts.map((post) => post.title).join("/")}`
   );
 
   if (!newPosts.length) {
-    console.log("No new posts to send");
+    log("No new posts to send");
     return;
   }
 
   const subscribers = db.subscribers;
-  console.log(`Found ${subscribers.length} active subscribers`);
+  log(`Found ${subscribers.length} active subscribers`);
 
   // TODO: Implement actual email sending logic here
   // For now, just update the lastMailout timestamp
@@ -82,7 +83,7 @@ async function checkSend() {
   // Generate personalized emails for each subscriber
   sendMailout({ subscribers, newPosts });
 
-  console.log("Check completed");
+  log("Check completed");
 }
 
 checkSend();

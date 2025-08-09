@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import Mailgun from "mailgun.js";
 import formData from "form-data";
+import { log } from "./log.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +30,8 @@ export function sendWelcomeMail(subscriber) {
   const emailHtml = nunjucks.render("mailTemplateHtml.njk", templateData);
   const emailText = [emailTitle, emailContent].join("\n\n");
 
+  log("Sending welcome email to", subscriber.email);
+
   sendToMailgun([
     {
       subscriber,
@@ -43,10 +46,9 @@ export function sendMailout({ subscribers, newPosts }) {
   const mailoutsToSend = [];
 
   for (const subscriber of subscribers) {
-    const emailTitle = process.env.NEW_POST_TEXT || "There's a new post";
     const templateData = {
       faviconUrl: process.env.FAVICON_URL,
-      emailTitle,
+      emailTitle: process.env.NEW_POST_TEXT || "There's a new post",
       content: nunjucks.render("newPosts.njk", { posts: newPosts }),
       subscriber: subscriber,
       unsubscribeUrl: `${
@@ -65,7 +67,7 @@ export function sendMailout({ subscribers, newPosts }) {
       subscriber: subscriber,
       emailHtml,
       emailText,
-      subject: emailTitle,
+      subject: newPosts[0].title || "Untitled",
     });
   }
 
@@ -94,15 +96,13 @@ export async function sendToMailgun(mailoutsToSend) {
         html: emailHtml,
       };
       if (!MAILGUN_API_KEY) {
-        console.log(payload);
+        log(payload);
         return false;
       }
       return mg.messages
         .create(MAILGUN_DOMAIN, payload)
-        .then(() => console.log("sent:", subscriber.email))
-        .catch((err) =>
-          console.error("error sending:", subscriber.email, err.message)
-        );
+        .then(() => log("sent:", subject, subscriber.email))
+        .catch((err) => log("error sending:", subscriber.email, err.message));
     }
   );
 
