@@ -12,6 +12,24 @@ const __dirname = path.dirname(__filename);
 // Configure nunjucks with the templates directory
 nunjucks.configure(path.join(__dirname, "./templates"), { autoescape: true });
 
+export function sendLog(message) {
+  const adminEmail = process.env.ADMIN_EMAIL;
+
+  if (!adminEmail) {
+    log("ADMIN_EMAIL not configured, skipping log email");
+    return;
+  }
+
+  const payload = {
+    subscriber: { email: adminEmail },
+    emailHtml: `<p>${message}</p>`,
+    emailText: message,
+    subject: "Mailer message",
+  };
+
+  sendToMailgun([payload]);
+}
+
 export function sendWelcomeMail(subscriber) {
   const emailTitle = process.env.WELCOME_TITLE || "Thanks for subscribing";
   const emailContent =

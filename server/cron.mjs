@@ -45,7 +45,13 @@ function getNewPosts({ feeds, since }) {
   const newPosts = [];
   for (const feed of feeds) {
     const posts = feed.items
-      .filter((item) => new Date(item.pubDate) > new Date(since))
+      .filter((item) => {
+        const sinceDate = new Date(since);
+        const pubDate = new Date(item.pubDate);
+        const isNewer = pubDate > sinceDate;
+        console.log(he.decode(item.title), isNewer);
+        return isNewer;
+      })
       .map((item) => ({ ...item, title: he.decode(item.title) }));
     newPosts.push(...posts);
   }

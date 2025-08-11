@@ -3,7 +3,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { db, syncDatabase } from "./db.mjs";
-import { sendMailout, sendWelcomeMail } from "./mail.mjs";
+import { sendLog, sendWelcomeMail } from "./mail.mjs";
 import { log } from "./log.mjs";
 import {
   adminAuthMiddleware,
@@ -82,6 +82,11 @@ app.post("/subscribe", (req, res) => {
     log("Subscribed new user", email);
 
     sendWelcomeMail(newSubscriber);
+    sendLog(
+      [name, email].filter(Boolean).join("/") +
+        " just signed up for your newsletter via " +
+        source
+    );
 
     res.status(201).json({
       status: "success",
