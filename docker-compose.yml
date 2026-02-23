@@ -1,6 +1,6 @@
 services:
   web:
-    container_name: mailer.kyd.au
+    container_name: ak-mailer.kyd.au
     build: .
     restart: always
     volumes:
@@ -8,7 +8,7 @@ services:
     env_file: .env
     labels:
       - traefik.enable=true
-      - traefik.http.routers.akmailer.rule=Host(`mailer.kyd.au`)
+      - traefik.http.routers.akmailer.rule=Host(`ak-mailer.kyd.au`)
       - traefik.http.routers.akmailer.entrypoints=websecure
       - traefik.http.routers.akmailer.tls.certresolver=le
       - traefik.http.services.akmailer.loadbalancer.server.port=3001
