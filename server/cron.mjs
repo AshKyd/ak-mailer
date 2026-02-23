@@ -7,6 +7,14 @@ import { log } from "./log.mjs";
 
 dotenv.config();
 
+// Handle self-signed certificates if configured
+if (process.env.ALLOW_INVALID_CERTS === "true") {
+  log(
+    "⚠️  ALLOW_INVALID_CERTS is set to true. SSL certificate verification is disabled.",
+  );
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
+
 const parser = new Parser();
 
 /**
@@ -37,7 +45,7 @@ async function getFeeds() {
     .map((url) => url.trim())
     .filter((url) => url);
   return Promise.all(
-    feedUrls.map((url) => fetchIfChangedSince({ url, since: 0 }))
+    feedUrls.map((url) => fetchIfChangedSince({ url, since: 0 })),
   );
 }
 
@@ -64,14 +72,14 @@ async function checkSend() {
   const lastMailout = db.lastMailout;
   const feedSource = await getFeeds();
   const feeds = await Promise.all(
-    feedSource.map((feed) => parser.parseString(feed))
+    feedSource.map((feed) => parser.parseString(feed)),
   );
   const newPosts = getNewPosts({ feeds, since: lastMailout });
 
   log(
     `Found ${newPosts.length} new posts since ${new Date(
-      lastMailout
-    ).toISOString()}: ${newPosts.map((post) => post.title).join("/")}`
+      lastMailout,
+    ).toISOString()}: ${newPosts.map((post) => post.title).join("/")}`,
   );
 
   if (!newPosts.length) {
