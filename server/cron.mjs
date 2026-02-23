@@ -24,14 +24,25 @@ const parser = new Parser();
  * @param { number } since - The timestamp to check against.
  */
 async function fetchIfChangedSince({ url, since }) {
-  const headers = {
-    "if-modified-since": new Date(since).toUTCString(),
-  };
-  const response = await fetch(url, { headers });
-  if (response.status === 304) {
+  try {
+    const headers = {
+      "if-modified-since": new Date(since).toUTCString(),
+    };
+    const response = await fetch(url, { headers });
+    if (response.status === 304) {
+      return null;
+    }
+    if (!response.ok) {
+      log(
+        `⚠️  Failed to fetch ${url}: ${response.status} ${response.statusText}`,
+      );
+      return null;
+    }
+    return response.text();
+  } catch (error) {
+    log(`❌ Error fetching ${url}:`, error.message);
     return null;
   }
-  return response.text();
 }
 
 async function getFeeds() {
@@ -71,9 +82,20 @@ async function checkSend() {
   const now = Date.now();
   const lastMailout = db.lastMailout;
   const feedSource = await getFeeds();
-  const feeds = await Promise.all(
-    feedSource.map((feed) => parser.parseString(feed)),
-  );
+  const feeds = [];
+
+  for (const source of feedSource) {
+    if (!source) continue;
+    try {
+      const parsed = await parser.parseString(source);
+      feeds.push(parsed);
+    } catch (error) {
+      log("❌ Failed to parse RSS feed:", error.message);
+      // Log a bit of the source to help debug
+      log("Source preview:", source.substring(0, 100));
+    }
+  }
+
   const newPosts = getNewPosts({ feeds, since: lastMailout });
 
   log(
