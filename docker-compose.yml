@@ -1,0 +1,20 @@
+services:
+  web:
+    container_name: mailer.kyd.au
+    build: .
+    restart: always
+    volumes:
+      - ./data:/data
+    env_file: .env
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.akmailer.rule=Host(`mailer.kyd.au`)
+      - traefik.http.routers.akmailer.entrypoints=websecure
+      - traefik.http.routers.akmailer.tls.certresolver=le
+      - traefik.http.services.akmailer.loadbalancer.server.port=3001
+      - traefik.docker.network=traefik_default
+    networks:
+      - traefik_default
+networks:
+  traefik_default:
+    external: true
